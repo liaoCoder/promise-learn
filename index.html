@@ -9,9 +9,14 @@
     <script src="./index.js"></script>
     <script>
       new Promise((resolve, reject) => {
-        resolve(123);
+        setTimeout(res=>{
+          resolve(1);
+        },1000)
       }).then((value) => {
+        console.log(a);
         console.log(value);
+      },reason=>{
+        console.log(reason)
       });
     </script>
   </body>
