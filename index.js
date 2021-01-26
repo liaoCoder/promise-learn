@@ -16,8 +16,10 @@ class Promise {
     if (this.status === Promise.PENDING) {
       this.status = Promise.FULLFILLED;
       this.value = value;
-      this.callbacks.map((callback) => {
-        callback.onFullfilled(this.value);
+      setTimeout(() => {
+        this.callbacks.map((callback) => {
+          callback.onFullfilled(this.value);
+        });
       });
     }
   }
@@ -25,8 +27,10 @@ class Promise {
     if (this.status === Promise.PENDING) {
       this.status = Promise.REJECTED;
       this.value = reason;
-      this.callbacks.map((callback) => {
-        callback.onRejected(this.value);
+      setTimeout(() => {
+        this.callbacks.map((callback) => {
+          callback.onRejected(this.value);
+        });
       });
     }
   }
@@ -38,39 +42,44 @@ class Promise {
     if (typeof onRejected !== "function") {
       onRejected = () => {};
     }
-    setTimeout(() => {
-      if (this.status === Promise.PENDING) {
-        this.callbacks.push({
-          onFullfilled: (value) => {
-            try {
-              onFullfilled(value);
-            } catch (error) {
-              onRejected(error);
-            }
-          },
-          onRejected: (reason) => {
-            try {
-              onRejected(reason);
-            } catch (error) {
-              onRejected(error);
-            }
-          },
-        });
-      }
-      if (this.status === Promise.FULLFILLED) {
-        try {
-          onFullfilled(this.value);
-        } catch (error) {
-          onRejected(error);
+
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (this.status === Promise.PENDING) {
+          this.callbacks.push({
+            onFullfilled: (value) => {
+              try {
+                onFullfilled(value);
+              } catch (error) {
+                onRejected(error);
+              }
+            },
+            onRejected: (reason) => {
+              try {
+                onRejected(reason);
+              } catch (error) {
+                onRejected(error);
+              }
+            },
+          });
         }
-      }
-      if (this.status === Promise.REJECTED) {
-        try {
-          onFullfilled(this.value);
-        } catch (error) {
-          onRejected(error);
+        if (this.status === Promise.FULLFILLED) {
+          try {
+            let result = onFullfilled(this.value);
+            resolve(result);
+          } catch (error) {
+            onRejected(error);
+          }
         }
-      }
+        if (this.status === Promise.REJECTED) {
+          try {
+            let reason = onFullfilled(this.value);
+            reject(reason);
+          } catch (error) {
+            onRejected(error);
+          }
+        }
+      });
     });
   }
 }
