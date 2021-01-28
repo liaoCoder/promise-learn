@@ -49,16 +49,18 @@ class Promise {
           this.callbacks.push({
             onFullfilled: (value) => {
               try {
-                onFullfilled(value);
+                let result = onFullfilled(value);
+                resolve(result);
               } catch (error) {
-                onRejected(error);
+                reject(error);
               }
             },
             onRejected: (reason) => {
               try {
-                onRejected(reason);
+                let result = onFullfilled(reason);
+                resolve(result);
               } catch (error) {
-                onRejected(error);
+                reject(error);
               }
             },
           });
@@ -68,7 +70,7 @@ class Promise {
             let result = onFullfilled(this.value);
             resolve(result);
           } catch (error) {
-            onRejected(error);
+            reject(error);
           }
         }
         if (this.status === Promise.REJECTED) {
@@ -76,10 +78,60 @@ class Promise {
             let reason = onFullfilled(this.value);
             reject(reason);
           } catch (error) {
-            onRejected(error);
+            reject(error);
           }
         }
       });
     });
   }
+}
+then(onFullfilled, onRejected) {
+  if (typeof onFullfilled !== "function") {
+    onFullfilled = () => {};
+  }
+
+  if (typeof onRejected !== "function") {
+    onRejected = () => {};
+  }
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (this.status === Promise.PENDING) {
+        this.callbacks.push({
+          onFullfilled: (value) => {
+            try {
+              let result = onFullfilled(value);
+              resolve(result);
+            } catch (error) {
+              reject(error);
+            }
+          },
+          onRejected: (reason) => {
+            try {
+              let result = onFullfilled(reason);
+              resolve(result);
+            } catch (error) {
+              reject(error);
+            }
+          },
+        });
+      }
+      if (this.status === Promise.FULLFILLED) {
+        try {
+          let result = onFullfilled(this.value);
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      }
+      if (this.status === Promise.REJECTED) {
+        try {
+          let reason = onFullfilled(this.value);
+          reject(reason);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    });
+  });
 }
