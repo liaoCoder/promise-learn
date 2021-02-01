@@ -93,44 +93,31 @@ class Promise {
         if (this.status === Promise.PENDING) {
           this.callbacks.push({
             onFullfilled: (value) => {
-              try {
-                let result = onFullfilled(value);
-                resolvePromise(Promise, result, resolve, reject);
-              } catch (error) {
-                reject(error);
-              }
+              this.parse(onFullfilled(this.value), resolve, reject);
             },
             onRejected: (reason) => {
-              try {
-                let result = onRejected(reason);
-                resolvePromise(Promise, result, resolve, reject);
-              } catch (error) {
-                reject(error);
-              }
+              this.parse(onRejected(this.value), resolve, reject);
             },
           });
         }
         if (this.status === Promise.FULLFILLED) {
-          try {
-            let result = onFullfilled(this.value);
-            if (result instanceof Promise) {
-              resolvePromise(Promise, result, resolve, reject);
-            } else {
-              resolve(result);
-            }
-          } catch (error) {
-            reject(error);
-          }
+          this.parse(onFullfilled(this.value), resolve, reject);
         }
         if (this.status === Promise.REJECTED) {
-          try {
-            let reason = onFullfilled(this.value);
-            reject(reason);
-          } catch (error) {
-            reject(error);
-          }
+          this.parse(onFullfilled(this.value), resolve, reject);
         }
       });
     });
+  }
+  parse(result, resolve, reject) {
+    try {
+      if (result instanceof Promise) {
+        resolvePromise(Promise, result, resolve, reject);
+      } else {
+        resolve(result);
+      }
+    } catch (error) {
+      reject(error);
+    }
   }
 }

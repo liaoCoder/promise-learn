@@ -9,7 +9,9 @@
     <script src="./index.js"></script>
     <script>
       new Promise((resolve, reject) => {
-        resolve(1);
+        setTimeout(()=>{
+          resolve(1);
+        },2000)
       }).then((value) => {
         return new Promise((resolve) => {
           resolve(value);
