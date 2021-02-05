@@ -8,15 +8,10 @@
   <body>
     <script src="./index.js"></script>
     <script>
-      new Promise((resolve, reject) => {
-        setTimeout(()=>{
-          resolve(1);
-        },2000)
-      }).then((value) => {
-        return new Promise((resolve) => {
-          resolve(value);
-        });
-      }).then((value) => {
+      const p = new Promise((value) => {
+        resolve(value);
+      });
+      Promise.resolve(p).then((value) => {
         console.log(value);
       });
     </script>

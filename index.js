@@ -82,7 +82,7 @@ class Promise {
     }
   }
   then(onFullfilled, onRejected) {
-    return new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       if (typeof onFullfilled !== "function") {
         onFullfilled = () => this.value;
       }
@@ -93,24 +93,28 @@ class Promise {
         if (this.status === Promise.PENDING) {
           this.callbacks.push({
             onFullfilled: (value) => {
-              this.parse(onFullfilled(this.value), resolve, reject);
+              this.parse(promise, onFullfilled(this.value), resolve, reject);
             },
             onRejected: (reason) => {
-              this.parse(onRejected(this.value), resolve, reject);
+              this.parse(promise, onRejected(this.value), resolve, reject);
             },
           });
         }
         if (this.status === Promise.FULLFILLED) {
-          this.parse(onFullfilled(this.value), resolve, reject);
+          this.parse(promise, onFullfilled(this.value), resolve, reject);
         }
         if (this.status === Promise.REJECTED) {
-          this.parse(onFullfilled(this.value), resolve, reject);
+          this.parse(promise, onFullfilled(this.value), resolve, reject);
         }
       });
     });
+    return promise;
   }
-  parse(result, resolve, reject) {
+  parse(promise, result, resolve, reject) {
     try {
+      if (promise === result) {
+        console.log("出错了");
+      }
       if (result instanceof Promise) {
         resolvePromise(Promise, result, resolve, reject);
       } else {
@@ -119,5 +123,19 @@ class Promise {
     } catch (error) {
       reject(error);
     }
+  }
+  static resolve(value) {
+    //执行静态方法resolve的话默认走的是resolve
+    //返回的也是一个promise，才可以拥有then方法
+    return new Promise((resolve) => {
+      if (value instanceof Promise) {
+        value.then((res) => {
+          console.log(res);
+          resolve(res);
+        });
+      } else {
+        resolve(value);
+      }
+    });
   }
 }
